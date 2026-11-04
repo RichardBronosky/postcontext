@@ -1,0 +1,31 @@
+[project]
+name = "postcontext"
+version = "0.1.0"
+description = "Turn a social post or web link into the text an LLM needs: caption, text on images and video frames, speech, page metadata."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+# Speech-to-text for videos. Without it, videos still get on-screen text (OCR).
+transcribe = ["faster-whisper>=1.2.1", "numpy"]
+
+[project.scripts]
+postcontext = "postcontext.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/postcontext"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
