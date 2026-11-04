@@ -33,7 +33,7 @@ new kind.
 ## Install
 
 ```bash
-uv tool install "git+<repo url>[transcribe]"     # or: pip install -e ".[transcribe]"
+uv tool install "git+https://github.com/RichardBronosky/postcontext[transcribe]"     # or: pip install -e ".[transcribe]"
 ```
 
 System tools: `yt-dlp`, `ffmpeg`, `tesseract` (with English data). For

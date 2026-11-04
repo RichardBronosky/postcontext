@@ -55,7 +55,7 @@ Status: ✅ handled · 🟡 partly · ❌ not yet
 *Example: Nola Secret Sesh "GARDEN SESH … Saturday, July 18 6PM–10PM Paradigm Gardens … Tickets — link in bio. EVENTBRITE.COM" (msg 649).*
 
 - Open the original `/share/` link: it redirects to `/posts/...?rdid=`. The bare `/posts/` URL without `rdid` lands on the news feed.
-- The post is in a `[role=dialog]` whose text contains "'s Post". **Another dialog, `aria-label="Messenger"`, holds Bruno's private chats. Never read it.**
+- The post is in a `[role=dialog]` whose text contains "'s Post". **Another dialog, `aria-label="Messenger"`, holds the user's private chats. Never read it.**
 - The text is laced with one-character lines (`n͏`, char + U+034F) and "Facebook" placeholders. Strip invisible chars, drop 1-char lines.
 - Outbound links are `l.facebook.com/l.php?u=<real url>`.
 - Code: `social.facebook` + `js/facebook_post.js`.

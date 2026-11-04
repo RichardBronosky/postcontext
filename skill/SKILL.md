@@ -5,7 +5,8 @@ description: Find out what a social media post or shared link is actually about 
 
 # postcontext
 
-`postcontext` is a CLI and Python library at `~/Work/postcontext` (`uv tool install` or `uv run` there).
+`postcontext` is a CLI and Python library (https://github.com/RichardBronosky/postcontext). Install it with
+`uv tool install "git+https://github.com/RichardBronosky/postcontext[transcribe]"`.
 It returns JSON with everything readable from a URL. Read its README for setup and CASES.md for
 the kinds of posts it knows.
 
@@ -21,8 +22,8 @@ From Python: `from postcontext import gather, recent_posts`.
 
 - Start with `--no-media`. Use the full mode only when the caption doesn't answer the question
   (a flyer image, a reel with the date spoken or on screen).
-- Instagram and Facebook need a logged-in Chrome with remote debugging on port 9222. On Bruno's
-  machine that is the shared Chromium from the `collaborative-chromium` skill: run its `browser-up`
+- Instagram and Facebook need a logged-in Chrome with remote debugging on port 9222. If the
+  `collaborative-chromium` skill is installed, that is its shared Chromium: run its `browser-up`
   first. If the result has `"error": "... login wall ..."`, ask the human to log in there. Never
   log in, solve a check or accept a dialog yourself.
 - Set `POSTCONTEXT_SESSION` to a name unique to your program so tabs don't collide.
@@ -43,6 +44,6 @@ From Python: `from postcontext import gather, recent_posts`.
 ## When it doesn't know a kind of post
 
 1. Open the post in the browser and note what a person sees and where the answer is.
-2. Add a case to `~/Work/postcontext/CASES.md`: example URL, where the meaning was hiding, the fix.
+2. Add a case to the repo's `CASES.md`: example URL, where the meaning was hiding, the fix.
 3. Change `src/postcontext/social.py` or the page scripts in `src/postcontext/js/`, add a test, and
    run `uv run pytest`.
