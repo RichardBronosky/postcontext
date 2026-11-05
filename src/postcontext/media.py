@@ -90,13 +90,17 @@ def fetch_video(url: str, workdir: Path) -> Path | None:
     try:
         p = subprocess.run(
             ["yt-dlp", "-q", "--no-warnings", "--no-playlist", "-f", "bv*[height<=720]+ba/b[height<=720]/b",
-             "--merge-output-format", "mp4", "--match-filter", f"duration<{MAX_VIDEO_S}", "-o", str(out), url],
+             "--merge-output-format", "mp4", "--match-filter", f"duration<?{MAX_VIDEO_S}", "-o", str(out), url],
             capture_output=True, text=True, timeout=300,
         )
     except subprocess.TimeoutExpired:
         return None
     if p.returncode != 0 or not out.exists():
         log.info("video download failed for %s: %s", url, p.stderr.strip()[-300:])
+        return None
+    # Image-style /p/ posts often have no listed length, so check the real one here.
+    if (d := duration(out)) and d >= MAX_VIDEO_S:
+        log.info("video too long (%.0fs) for %s", d, url)
         return None
     return out
 

@@ -95,9 +95,16 @@ def fetch_http(url: str) -> dict:
     ld = _jsonld(soup)
     if ld:
         out["json_ld"] = json.dumps(ld, ensure_ascii=False)[:JSONLD_LIMIT]
-    for t in soup(["script", "style", "noscript", "svg"]):
+    for t in soup(["script", "style", "noscript", "svg", "nav", "header", "footer", "aside", "form"]):
         t.decompose()
-    text = " ".join(soup.get_text(" ").split())
+    # News and event pages bury the story under menus; prefer the main article when it has substance.
+    main = None
+    for sel in ("[itemprop=articleBody]", "article", "main", "[role=main]"):
+        cand = soup.select_one(sel)
+        if cand and len(cand.get_text(" ", strip=True)) >= 500:
+            main = cand
+            break
+    text = " ".join((main or soup).get_text(" ").split())
     if text:
         out["text"] = text[:TEXT_LIMIT]
     return out

@@ -19,6 +19,7 @@ $ postcontext https://www.instagram.com/p/DfSSy86M4R6/
 | Instagram post / carousel | caption, author, post date, location tag, comments, OCR of every image |
 | Instagram reel | the above + on-screen text from frames every 2 s + speech transcript |
 | Instagram profile | name, bio, link in bio; `--recent N` gathers the latest N posts |
+| "Link in bio" posts | the author's bio links, the entries of their Linktree-style list, and the entry matching the post, read |
 | Facebook post / reel | post text, outbound links, OCR of images, video frames + transcript |
 | YouTube, SoundCloud, Bandcamp, ... | yt-dlp metadata (title, description, uploader) |
 | Any web page | title, OpenGraph tags, schema.org JSON-LD (ticket sites put `Event` objects there), text |

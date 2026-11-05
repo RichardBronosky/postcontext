@@ -38,8 +38,12 @@ From Python: `from postcontext import gather, recent_posts`.
   `video.on_screen_text` lines start with the second they appear.
 - `video.transcript.text` is speech. Show dates are often only spoken.
 - `page_text` includes the first comments, which sometimes correct a time.
-- `links` are outbound links (ticket sites, link in bio). Gather those too when the post says
-  "tickets in bio" or "link below": ticket pages carry schema.org `Event` JSON-LD with exact dates.
+- `bio_link` appears when the caption says "link in bio" (or similar): the author's bio links, the
+  entries of any Linktree-style list, the `matched` entry and its `page`. Trust the article over the
+  caption when they disagree (captions get dates wrong). If `matched` is missing or wrong, pick from
+  `entries` and gather that URL yourself.
+- `links` are outbound links in the post. Ticket pages carry schema.org `Event` JSON-LD
+  (`json_ld`) with exact start, end and address; gather them when the time is still missing.
 
 ## When it doesn't know a kind of post
 

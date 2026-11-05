@@ -10,7 +10,7 @@ import re
 import time
 from urllib.parse import urlparse
 
-from . import media
+from . import biolink, media
 from .browser import Browser, BrowserError
 
 log = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def _src_key(src: str) -> str:
     return src.split("?")[0]
 
 
-def instagram(url: str, with_media: bool = True) -> dict:
+def instagram(url: str, with_media: bool = True, follow_bio: bool = True) -> dict:
     br = browser()
     m = IG_POST.search(url)
     if not m:
@@ -100,7 +100,25 @@ def instagram(url: str, with_media: bool = True) -> dict:
             out["images"] = [{"index": o["index"], "alt": alts.get(_src_key(imgs[o["index"]]["src"])) or None,
                               "text": o["ocr"] or None} for o in ocrs if o["ocr"] or alts.get(_src_key(imgs[o["index"]]["src"]))]
             out["image_count"] = len(imgs)
+    caption = out.get("caption", "")
+    if follow_bio and out.get("author") and biolink.points_to_bio(caption):
+        # Case C8: the details are behind the author's link in bio.
+        post_text = " ".join([caption] + [i.get("text") or "" for i in out.get("images", [])])
+        try:
+            out["bio_link"] = biolink.follow(br, out["author"], post_text, gather=_destination)
+        except BrowserError as e:
+            out["bio_link"] = {"error": str(e)}
     return {k: v for k, v in out.items() if v not in (None, "", [])}
+
+
+def _destination(url: str) -> dict:
+    """Read a page a bio link points to, without media and without following bios again."""
+    from .fetch import YTDLP_HOSTS, fetch_http, fetch_ytdlp, host_matches
+    if handles(url) and "instagram.com" in host(url):
+        return {"url": url, **instagram(url, with_media=False, follow_bio=False)}
+    if host_matches(url, YTDLP_HOSTS):
+        return {"url": url, **(fetch_ytdlp(url) or fetch_http(url))}
+    return {"url": url, **fetch_http(url)}
 
 
 def facebook(url: str, with_media: bool = True) -> dict:
@@ -123,7 +141,7 @@ def facebook(url: str, with_media: bool = True) -> dict:
 
 
 def recent_posts(profile_url: str, limit: int = 12) -> list[str]:
-    """Post and reel URLs from an Instagram profile grid (case C12)."""
+    """Post and reel URLs from an Instagram profile grid (case C10)."""
     prof = IG_PROFILE.search(profile_url.split("?")[0])
     if not prof:
         raise ValueError(f"not an Instagram profile URL: {profile_url}")

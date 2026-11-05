@@ -112,6 +112,9 @@ class Browser:
     def script(self, name: str):
         return self.eval((JS_DIR / name).read_text())
 
+    def press(self, key: str) -> None:
+        self._ab("press", key)
+
     def url(self) -> str:
         return self._ab("get", "url").strip()
 

@@ -46,3 +46,30 @@ def test_reuses_own_tab_when_label_switch_fails(monkeypatch):
     monkeypatch.setattr(b, "_own_tab_alive", lambda: True)
     b.start("https://www.instagram.com/p/x/")
     assert calls[-1] == ("open", "https://www.instagram.com/p/x/") and b.started
+
+
+def test_points_to_bio():
+    from postcontext.biolink import points_to_bio
+    assert points_to_bio("It's at 7 p.m. Monday. Tap the link in our bio for details. 🔗")
+    assert points_to_bio("Tickets available now — link in bio")
+    assert points_to_bio("RSVP in bio!")
+    assert not points_to_bio("Proof of life")
+    assert not points_to_bio("My bio is a lie")
+
+
+def test_best_entry_matches_headline():
+    from postcontext.biolink import best_entry
+    entries = [{"title": "Celebrating America 250 in Hancock County | Sponsored", "url": "a"},
+               {"title": "Niki Davis-Fainbloom releases ‘Fetish’ book | Events | nola.com", "url": "b"},
+               {"title": "Gambit's Thumbs Up for Nov. 2 | Thumbs Up Down | nola.com", "url": "c"}]
+    post = ("Niki Davis-Fainbloom isn’t your average sex educator ... releasing her first book, “Fetish” "
+            "Niki Davis-Fainbloom releases ‘Fetish’ book and offers Kissing workshops in New Orleans")
+    match, score = best_entry(entries, post)
+    assert match["url"] == "b" and score >= 0.5
+    assert best_entry(entries, "Unrelated post about pizza")[0] is None
+
+
+def test_link_lists_and_clean_urls():
+    from postcontext.biolink import clean_url, is_link_list
+    assert is_link_list("http://linktr.ee/gambitneworleans?utm_source=ig") and not is_link_list("https://nola.com/x")
+    assert clean_url("http://linktr.ee/x?utm_source=ig&fbclid=abc&id=3") == "http://linktr.ee/x?id=3"

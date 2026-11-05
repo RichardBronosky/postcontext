@@ -65,10 +65,16 @@ Status: ✅ handled · 🟡 partly · ❌ not yet
 
 - Redirects to `/reel/<id>`; caption is in `[role=main]`. yt-dlp downloads it; same frames + transcript as C4.
 
-## C8 ❌ Ticket/details only behind "link in bio" or an event site
-*Example: Nola Secret Sesh (C6) says "Tickets available now — link in bio"; the Eventbrite card is in the post.*
+## C8 🟡 Details only behind "link in bio"
+*Example: gambitneworleans `p/DfVZ2K3mtM3` (2026-11-05). The caption names two events, gets one date wrong ("Thursday, Nov. 8"; it was Nov. 5) and leaves out the party's date: "Tap the link in our bio for details." The article behind the bio link has all three events.*
 
-- Next step: follow `links` from the post (or the profile's link in bio) and fetch the ticket page with `fetch_http` (JSON-LD `Event` objects carry exact dates). Not built yet. This case's post already had the date in its text.
+- Triggered when the caption points to the bio (`biolink.POINTS_TO_BIO`: "link in our bio", "tickets in bio", "RSVP in bio", "link below").
+- The profile's bio links are often a **button** ("bestofneworleans.com and 1 more") that opens a dialog, not `<a>` tags. `instagram_bio_more.js` clicks it, `instagram_dialog_links.js` reads the dialog, Escape closes it.
+- Link-list pages (Linktree, Beacons, ...: `biolink.LINK_LIST_HOSTS`) return **403 to plain HTTP**; read them in the browser with `link_list.js`. Media accounts keep one entry per recent post, titled like the article.
+- Pick the entry whose title shares the most words with the caption **and the OCR of the post's image** (the image usually repeats the headline). Needs ≥3 shared words and ≥50% of the title's words; Gambit's matched at 0.78. A profile with a single plain link uses that link.
+- The chosen page is read without media and without following bios again (`social._destination`). Result: `bio_link.{bio_links, lists, entries, matched, page}`. `entries` (titles + URLs) stay in the output, so a reader can pick another if the match is wrong.
+- 🟡 Not yet: a second hop. The article said "tickets on eventbrite.com" with no link; the party's 7 PM start time was only on the organizer's Eventbrite page (found by hand via @missbloomsexeducator's Linktree → Events). Ticket pages carry schema.org `Event` JSON-LD with exact start/end and address.
+- Code: `biolink.py`.
 
 ## C9 ✅ Non-social links
 *Examples: Pitchfork review, donttellcomedy.com/cities/new-orleans-la, Google Maps share, YouTube.*
@@ -89,11 +95,18 @@ Status: ✅ handled · 🟡 partly · ❌ not yet
 
 ---
 
+## C12 ✅ Instagram `/p/` post that is a video, with no listed length
+*Example: builders.cv `p/DfJN1Xfs-QE` (2026-11-05), a 9 s video ad; the pitch is only on screen and spoken.*
+
+- yt-dlp reports no `duration` for some `/p/` videos, and `--match-filter "duration<600"` rejects a missing value ("does not pass filter"). Use `duration<?600` (passes when unknown) and check the real length with ffprobe after downloading.
+- Code: `media.fetch_video`.
+
 ## Operational notes
 - postcontext keeps one tab labelled `postcontext` per session and reuses it, even across processes (checked via DevTools `/json/list` against `<session>.hub-labels`). With the collaborative-chromium helper scripts, `tab-new` silently fails if the label already exists. That bug made the first full sharebot import fall back to plain fetching for all 22 social links. Switching back to the tab by label (`agent-browser tab postcontext`) can also fail, because agent-browser doesn't know labels that `tab-new` gave; `--pin-tab` already binds the session to its tab, so postcontext ignores that failure and just opens the URL (2026-11-05: a live share fell back to plain HTTP and got only the login page's title, "Instagram").
 - Every page load replays the post's video in the browser. Opening the same post over and over while debugging looks like a loop to anyone watching the browser.
 
 ## Sites that block plain fetching
+- Linktree (and similar link-in-bio sites): 403 to plain HTTP; read in the browser (C8).
 - Songkick: 406/410 to any non-browser client. Use the shared browser if it matters.
 - Instagram without login: no captions (C1). Facebook `/share/` posts without login: HTTP 400.
 - Rewriting the User-Agent to look like a link-preview crawler was considered and rejected; use the logged-in browser instead.
