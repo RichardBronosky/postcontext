@@ -75,7 +75,12 @@ class Browser:
             subprocess.run([str(self.scripts / "browser-up")], capture_output=True, timeout=60)
         self._pages()  # fail early with a clear message if no browser is listening
         if self._own_tab_alive():
-            self._ab("tab", LABEL)
+            # --pin-tab already binds the session to this tab. Switching by label is only
+            # a nicety: agent-browser doesn't know labels given by tab-new, so it may fail.
+            try:
+                self._ab("tab", LABEL)
+            except BrowserError:
+                pass
             self._ab("open", url)
         elif self.scripts:
             p = subprocess.run([str(self.scripts / "tab-new"), self.session, LABEL, url],

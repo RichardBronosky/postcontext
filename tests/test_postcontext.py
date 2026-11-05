@@ -26,3 +26,23 @@ def test_dedupe_frame_texts():
 
 def test_clean_ocr_drops_noise():
     assert _clean_ocr("‘4 How | keep up\n~~ .. ~\nwd\nSTEP 1") == "‘4 How | keep up\nSTEP 1"
+
+
+def test_reuses_own_tab_when_label_switch_fails(monkeypatch):
+    from postcontext.browser import Browser, BrowserError
+
+    b = Browser(session="t")
+    b.scripts = None
+    calls = []
+
+    def fake_ab(*args, timeout=60):
+        calls.append(args)
+        if args[0] == "tab":
+            raise BrowserError("agent-browser tab: No tab with label `postcontext`")
+        return ""
+
+    monkeypatch.setattr(b, "_ab", fake_ab)
+    monkeypatch.setattr(b, "_pages", lambda: [])
+    monkeypatch.setattr(b, "_own_tab_alive", lambda: True)
+    b.start("https://www.instagram.com/p/x/")
+    assert calls[-1] == ("open", "https://www.instagram.com/p/x/") and b.started

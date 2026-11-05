@@ -90,7 +90,7 @@ Status: ✅ handled · 🟡 partly · ❌ not yet
 ---
 
 ## Operational notes
-- postcontext keeps one tab labelled `postcontext` per session and reuses it, even across processes (checked via DevTools `/json/list` against `<session>.hub-labels`). With the collaborative-chromium helper scripts, `tab-new` silently fails if the label already exists. That bug made the first full sharebot import fall back to plain fetching for all 22 social links.
+- postcontext keeps one tab labelled `postcontext` per session and reuses it, even across processes (checked via DevTools `/json/list` against `<session>.hub-labels`). With the collaborative-chromium helper scripts, `tab-new` silently fails if the label already exists. That bug made the first full sharebot import fall back to plain fetching for all 22 social links. Switching back to the tab by label (`agent-browser tab postcontext`) can also fail, because agent-browser doesn't know labels that `tab-new` gave; `--pin-tab` already binds the session to its tab, so postcontext ignores that failure and just opens the URL (2026-11-05: a live share fell back to plain HTTP and got only the login page's title, "Instagram").
 - Every page load replays the post's video in the browser. Opening the same post over and over while debugging looks like a loop to anyone watching the browser.
 
 ## Sites that block plain fetching
